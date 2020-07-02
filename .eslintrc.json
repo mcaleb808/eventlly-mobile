@@ -1,0 +1,80 @@
+{
+  "root": true,
+  "env": {
+    "es6": true,
+    "node": true,
+    "jest": true
+  },
+  "parser": "babel-eslint",
+  "extends": ["airbnb", "plugin:prettier/recommended", "prettier/react"],
+  "globals": {
+    "fetch": false,
+    "Atomics": "readonly",
+    "SharedArrayBuffer": "readonly"
+  },
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "ecmaVersion": 2018,
+    "sourceType": "module"
+  },
+  "plugins": ["react", "prettier", "react-hooks"],
+  "rules": {
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn",
+    "no-use-before-define": "off",
+    "react/prop-types": 2,
+    "react/forbid-prop-types": [
+      2,
+      {
+        "forbid": ["object", "array"],
+        "checkContextTypes": false,
+        "checkChildContextTypes": false
+      }
+    ],
+    "no-unused-vars": [
+      "error",
+      {
+        "varsIgnorePattern": "^_",
+        "argsIgnorePattern": "^_"
+      }
+    ],
+    "react/jsx-filename-extension": [
+      1,
+      {
+        "extensions": [".js", ".jsx"]
+      }
+    ],
+    "quotes": "error",
+    "eol-last": ["error", "always"],
+    "import/prefer-default-export": 2,
+    "one-var": "error",
+    "one-var-declaration-per-line": "error",
+    "new-cap": 0,
+    "comma-dangle": 0,
+    "global-require": "off",
+    "arrow-body-style": ["error", "as-needed"],
+    "import/no-dynamic-require": "error",
+    "prettier/prettier": 0,
+    "no-shadow": [
+      "error",
+      {
+        "hoist": "functions"
+      }
+    ],
+    "curly": ["error", "multi-line"],
+    "import/no-unresolved": [
+      2,
+      {
+        "commonjs": true
+      }
+    ],
+    "react/prefer-stateless-function": [
+      0,
+      {
+        "ignorePureComponents": true
+      }
+    ]
+  }
+}
