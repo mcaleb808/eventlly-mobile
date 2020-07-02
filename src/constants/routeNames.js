@@ -62,3 +62,4 @@ export const FOLLOWING = 'FOLLOWING';
 export const SETTINGS = 'SETTINGS';
 export const ABOUT_US = 'ABOUT_US';
 export const DEACTIVATE_ACCOUNT = 'DEACTIVATE_ACCOUNT';
+export const WELCOME = 'WELCOME';

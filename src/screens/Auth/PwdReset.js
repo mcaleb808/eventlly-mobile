@@ -1,71 +1,59 @@
-/* eslint-disable react/jsx-filename-extension */
-import React from 'react';
-import { Title, withTheme, HelperText } from 'react-native-paper';
+import React, { useState } from 'react';
+import { Title, withTheme } from 'react-native-paper';
 import PropTypes from 'prop-types';
-import { useFormik } from 'formik';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { isEmail } from 'validator';
 import Container from '../../components/Containers';
 import TextInput from '../../components/Inputs/TextInput';
 import Confirm from '../../components/Buttons/Confirm';
 import styles from '../../components/shared/styles';
+import inputs from '../../constants/inputProps';
 import LinkWithText from '../../components/Buttons/LinkWithText';
 import { LOGIN, NEW_PASSWORD } from '../../constants/routeNames';
-import EventlyMessage from '../../components/Message';
-import resetPwd from '../../redux/actions/auth/reset-pwd';
-import { clearAuthState } from '../../redux/actions/auth/setNewPassword';
+import { submitResetPwd } from '../../redux/actions/auth';
+import Error from '../../components/Error';
+import MessageAlert from '../../components/shared/MessageAlert';
 
+const input = inputs.find(i => i.label.includes('Email'));
 const Reset = ({ navigation }) => {
+  const [inputValues, setInputs] = useState({ submitting: false });
+
+  const { submitting, resetPwdMessage, resetSuccessMessage } = useSelector(
+    state => state.auth
+  );
+
   const dispatch = useDispatch();
-  const { data, error, loading } = useSelector(
-    state => state.user.resetPassword
-  );
 
-  const validate = values => {
-    const errors = {};
-
-    if (!values.email) {
-      errors.email = 'Email is required';
-    } else if (
-      !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(values.email)
-    ) {
-      errors.email = 'Please enter a valid email address';
-    }
-
-    return errors;
-  };
-
-  const handleSignUpSubmit = values => {
-    const userData = {
-      email: values.email
-    };
-
-    resetPwd(userData)(dispatch);
-  };
-
-  const formik = useFormik({
-    initialValues: { email: '' },
-    validate,
-    onSubmit: values => {
-      handleSignUpSubmit(values);
-    }
+  const [validEmail, setValidEmail] = useState({
+    status: true,
+    error: 'Email is required'
   });
-  React.useEffect(
-    () => () => {
-      clearAuthState()(dispatch);
-      if (formik.errors) {
-        formik.setErrors(null);
-      }
-    },
-    []
-  );
-  const {
-    handleChange,
-    handleBlur,
-    handleSubmit,
-    errors,
-    touched,
-    values
-  } = formik;
+
+  const onResetPassword = async () => {
+    setValidEmail({ status: true });
+    const { emailAddress } = inputValues;
+
+    if (!emailAddress || emailAddress.length < 1) {
+      setValidEmail({
+        status: false,
+        error: 'Email is required'
+      });
+      return;
+    }
+    if (!isEmail(emailAddress)) {
+      setValidEmail({
+        status: false,
+        error: 'Enter a valid Email '
+      });
+      return;
+    }
+
+    dispatch(
+      submitResetPwd({
+        email: emailAddress
+      })
+    );
+  };
 
   return (
     <Container>
@@ -73,43 +61,37 @@ const Reset = ({ navigation }) => {
         <Title style={[styles.title, { marginBottom: 30 }]}>
           Reset Password
         </Title>
-        {data && (
-          <EventlyMessage
-            style={{ marginTop: 30 }}
-            title="Success!"
-            error={false}
-            message="We sent you an email with instructions on how to reset your account password"
-          />
-        )}
         <TextInput
           style={[styles.input, { marginTop: 25 }]}
-          error={errors.email && touched.email}
-          label="Enter your Email"
-          onChangeText={handleChange('email')}
-          onBlur={handleBlur('email')}
-          value={values.email}
+          key={Number(1)}
+          onChangeText={value =>
+            setInputs({ ...inputValues, [input.textContentType]: value })
+          }
+          value={inputValues[input.textContentType]}
+          validInfo={validEmail}
+          {...input}
         />
-        {errors.email && touched.email ? (
-          <HelperText style={styles.helperText} type="error">
-            {errors.email}
-          </HelperText>
+        {resetPwdMessage && resetPwdMessage.length > 1 ? (
+          <Error text={resetPwdMessage} />
         ) : null}
-        {error && <EventlyMessage title="Error" message={error.error} />}
         <Confirm
           style={{ marginBottom: 40, marginTop: 20 }}
+          text={submitting ? 'Please wait' : 'submit'}
           labelStyle={styles.confirmButton}
-          text={loading ? 'Please wait...' : 'Send'}
-          disabled={loading}
-          loading={loading}
           contentStyle={{ height: 45 }}
-          onPress={handleSubmit}
+          loading={submitting}
+          disabled={submitting}
+          onPress={() => onResetPassword()}
         />
         <LinkWithText
-          text="Want to Login?"
-          buttonLabel="log in here"
-          onPress={() => navigation.navigate(NEW_PASSWORD)}
+          text="Do you have an account?"
+          buttonLabel="log in"
+          onPress={() => navigation.navigate(LOGIN)}
         />
       </Container>
+      {resetSuccessMessage && resetSuccessMessage.length > 0 ? (
+        <MessageAlert visible={true} message={resetSuccessMessage} />
+      ) : null}
     </Container>
   );
 };

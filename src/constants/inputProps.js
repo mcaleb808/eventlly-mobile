@@ -26,5 +26,10 @@ export default [
     autoCapitalize: 'none',
     autoCompleteType: 'password',
     autoCorrect: false
+  },
+  {
+    label: 'Repeat your Password',
+    textContentType: 'newPassword',
+    autoCapitalize: 'none'
   }
 ];

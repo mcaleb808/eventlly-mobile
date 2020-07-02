@@ -1,11 +1,10 @@
-/* eslint-disable react/jsx-filename-extension */
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { View } from 'react-native';
+import { View, Text } from 'react-native';
 import { TextInput as Input, Button, withTheme } from 'react-native-paper';
 import styles from '../shared/styles';
 
-const TextInput = ({ theme, label, onChangeText, value, ...props }) => {
+const TextInput = ({ label, onChangeText, value, validInfo, ...props }) => {
   const secureBtn = label.toLowerCase().includes('password');
   const [hidden, setHidden] = useState(secureBtn);
   return (
@@ -17,14 +16,20 @@ const TextInput = ({ theme, label, onChangeText, value, ...props }) => {
         onChangeText={onChangeText}
         value={value}
         secureTextEntry={hidden}
+        error={!validInfo.status}
         {...props}
       />
+      {!validInfo.status ? (
+        <Text style={{ color: '#bb0000', fontSize: 14, paddingVertical: 10 }}>
+          {validInfo.error}
+        </Text>
+      ) : null}
       {secureBtn && (
         <Button
           labelStyle={{
             textTransform: 'capitalize',
             marginRight: 0,
-            color: theme.colors.primary
+            color: '#bb0000'
           }}
           style={{ alignSelf: 'flex-end' }}
           compact
@@ -38,17 +43,19 @@ const TextInput = ({ theme, label, onChangeText, value, ...props }) => {
 
 TextInput.propTypes = {
   props: PropTypes.objectOf(PropTypes.any),
-  label: PropTypes.string.isRequired,
-  theme: PropTypes.objectOf(PropTypes.any).isRequired,
+  label: PropTypes.string,
   onChangeText: PropTypes.func.isRequired,
   value: PropTypes.string,
-  secureBtn: PropTypes.bool
+  secureBtn: PropTypes.bool,
+  validInfo: PropTypes.objectOf(PropTypes.any)
 };
 
 TextInput.defaultProps = {
   props: {},
   secureBtn: false,
-  value: null
+  value: null,
+  validInfo: { status: true },
+  label: null
 };
 
 export default withTheme(TextInput);

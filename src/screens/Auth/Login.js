@@ -1,165 +1,162 @@
-/* eslint-disable react/jsx-filename-extension */
-import React, { useEffect } from 'react';
-import { ScrollView } from 'react-native';
-import { Title, withTheme, HelperText } from 'react-native-paper';
+import React, { useState } from 'react';
+import { Title, withTheme } from 'react-native-paper';
+import { View, Text } from 'react-native';
 import PropTypes from 'prop-types';
-import { useDispatch, useSelector } from 'react-redux';
-import { useFormik } from 'formik';
+import { useSelector, useDispatch } from 'react-redux';
 import Container from '../../components/Containers';
 import TextInput from '../../components/Inputs/TextInput';
 import Confirm from '../../components/Buttons/Confirm';
 import styles from '../../components/shared/styles';
 import LinkWithText from '../../components/Buttons/LinkWithText';
-import { SIGNUP, RESET, APP } from '../../constants/routeNames';
-import EventlyMessage from '../../components/Message';
-import login from '../../redux/actions/auth/login';
-import SocialAuthView from './SocialAuth';
+import inputs from '../../constants/inputProps';
+import { SIGNUP, RESET, EVENTS, WELCOME } from '../../constants/routeNames';
+import SocialButton from '../../components/Buttons/SocialButton';
+import { submitLogin } from '../../redux/actions/auth';
+import Error from '../../components/Error';
+import MessageAlert from '../../components/shared/MessageAlert';
+
+const data = inputs.filter(
+  i =>
+    i.label.toLowerCase().includes('email') || i.textContentType === 'password'
+);
 
 const Login = ({ navigation }) => {
-  const { data } = useSelector(state => state.user.signUp);
-  const dispatch = useDispatch();
-  const loginData = useSelector(state => state.user.login);
-
-  const { userEmail } = useSelector(state => state.user.checkUserExists);
-  const { error, loading } = loginData;
-
-  const { msg } = useSelector(({ user }) => user.setNewPassword);
-
-  useEffect(() => {
-    if (
-      loginData.data &&
-      loginData.data.status &&
-      loginData.data.status === 200 &&
-      loginData.data.user
-    ) {
-      navigation.navigate(APP, loginData.data.user);
-    }
-  }, [loginData]);
-
-  const validate = values => {
-    const errors = {};
-
-    if (!values.email) {
-      errors.email = 'Email is required';
-    } else if (
-      !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(values.email)
-    ) {
-      errors.email = 'Please enter a valid email address';
-    }
-    if (!values.password) {
-      errors.password = 'Password is required';
-    }
-    return errors;
-  };
-
-  const handleSignUpSubmit = values => {
-    const userData = {
-      email: values.email,
-      password: values.password
-    };
-
-    login(userData)(dispatch);
-  };
-
-  const formik = useFormik({
-    initialValues: { email: '', password: '' },
-    validate,
-    onSubmit: values => {
-      handleSignUpSubmit(values);
-    }
+  const { submitting, loginMessage, passwordSuccessMessage } = useSelector(
+    state => state.auth
+  );
+  const [inputValues, setInputs] = useState({});
+  const [checkEmail, setEmail] = useState({ status: true, error: 'required' });
+  const [checkPassword, setPassword] = useState({
+    status: true,
+    error: 'required'
   });
-  useEffect(() => {
-    if (userEmail) {
-      formik.setFieldValue('email', userEmail);
-    }
-  }, [userEmail]);
 
-  const {
-    handleChange,
-    handleBlur,
-    handleSubmit,
-    errors,
-    touched,
-    values
-  } = formik;
+  const [loginError, setError] = useState(null);
+  const dispatch = useDispatch();
+
+  const onLoginButton = async () => {
+    setEmail({ status: true });
+    setPassword({ status: true });
+    const { emailAddress, password } = inputValues;
+    if (!emailAddress || emailAddress.length < 1) {
+      setEmail({
+        status: false,
+        error: 'Email is required'
+      });
+      return;
+    }
+
+    if (!password || password.length < 1) {
+      setPassword({
+        status: false,
+        error: 'Password is required'
+      });
+      return;
+    }
+
+    const payload = { email: emailAddress, password };
+    dispatch(submitLogin(payload))
+      .then(res => {
+        console.log(res);
+        if (res.status && res.status === 200) {
+          if (res.user && res.user.isActivated) {
+            navigation.navigate(EVENTS);
+          } else {
+            navigation.navigate(WELCOME, {
+              snackBar: {
+                status: true,
+                message: 'You have successfully logged in.'
+              }
+            });
+          }
+        }
+      })
+      .catch(err => {
+        setError(loginMessage);
+        console.log(err);
+      });
+  };
+
   return (
     <Container>
-      <ScrollView style={{ width: '91.7%' }}>
+      <Container style={{ width: '91.7%' }}>
         <Title style={[styles.title]}>Sign In</Title>
-
-        {data && data.user && data.status && data.status === 201 && (
-          <EventlyMessage
-            style={{ marginTop: 30 }}
-            title="Success!"
-            error={false}
-            message={`We sent a confirmation email to ${data.user.email.toLowerCase()},please click the link in your mail box to confirm your account`}
+        {data.map((input, index) => (
+          <TextInput
+            style={[styles.input, { marginTop: index === 0 ? 25 : 0 }]}
+            key={Number(index)}
+            onChangeText={value =>
+              setInputs({ ...inputValues, [input.textContentType]: value })
+            }
+            value={inputValues[input.textContentType]}
+            {...input}
+            validInfo={
+              input.textContentType === 'emailAddress'
+                ? checkEmail
+                : checkPassword
+            }
           />
-        )}
-
-        {msg && (
-          <EventlyMessage
-            style={{ marginTop: 30 }}
-            title="Success!"
-            error={false}
-            message={msg}
-          />
-        )}
-        <TextInput
-          style={[styles.input, { marginTop: 25 }]}
-          error={errors.email && touched.email}
-          label="Enter your Email"
-          onChangeText={handleChange('email')}
-          onBlur={handleBlur('email')}
-          value={values.email}
-        />
-        {errors.email && touched.email ? (
-          <HelperText style={styles.helperText} type="error">
-            {errors.email}
-          </HelperText>
+        ))}
+        {loginMessage && loginMessage.length > 1 ? (
+          <Error text={`${loginMessage}, Please try again`} />
         ) : null}
-
-        <TextInput
-          style={styles.input}
-          onChangeText={handleChange('password')}
-          onBlur={handleBlur('password')}
-          value={values.password}
-          error={errors.password && touched.password}
-          label="Enter your password"
-        />
-
-        {errors.password && touched.password ? (
-          <HelperText style={styles.helperText} type="error">
-            {errors.password}
-          </HelperText>
-        ) : null}
-        {error && error.status !== 409 && (
-          <EventlyMessage title="Error" message={error.error} />
-        )}
         <LinkWithText
           text="Forgot password?"
           buttonLabel="reset"
-          disabled={loading}
           onPress={() => navigation.navigate(RESET)}
           textTransform="capitalize"
         />
         <Confirm
           style={{ marginVertical: 30 }}
-          text={loading ? 'Verifying' : 'sign in'}
-          disabled={loading}
-          loading={loading}
+          text="sign in"
+          loading={submitting}
+          disabled={submitting}
           labelStyle={styles.confirmButton}
           contentStyle={{ height: 45 }}
-          onPress={handleSubmit}
+          onPress={() => onLoginButton()}
         />
-
         <LinkWithText
           text="New here? Get started"
-          disabled={loading}
           buttonLabel="sign up"
           onPress={() => navigation.navigate(SIGNUP)}
         />
-        <SocialAuthView />
-      </ScrollView>
+        <Text
+          style={{
+            marginTop: 25,
+            fontWeight: '500',
+            lineHeight: 17,
+            color: 'rgba(29, 57, 77, 0.7)',
+            fontSize: 14
+          }}>
+          Login with
+        </Text>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}>
+          <SocialButton
+            name="Facebook"
+            source={require('../../assets/img/authFacebook.png')}
+            color="#475993"
+            textColor="#FFFFFF"
+            onPress={() => null}
+            navigation={navigation}
+          />
+          <SocialButton
+            name="Google"
+            source={require('../../assets/img/authGoogle.png')}
+            color="#FFFFFF"
+            textColor="#518EF8"
+            onPress={() => null}
+            navigation={navigation}
+          />
+        </View>
+      </Container>
+      {passwordSuccessMessage && passwordSuccessMessage.length > 0 ? (
+        <MessageAlert visible message={passwordSuccessMessage} />
+      ) : null}
     </Container>
   );
 };

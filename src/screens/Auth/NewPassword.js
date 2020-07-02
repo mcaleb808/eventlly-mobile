@@ -1,128 +1,125 @@
-/* eslint-disable react/jsx-filename-extension */
-import React, { useEffect } from 'react';
-import { Title, withTheme, HelperText } from 'react-native-paper';
-import { useFormik } from 'formik';
-import PropTypes from 'prop-types';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useState } from 'react';
+import { Title, withTheme } from 'react-native-paper';
+import { useSelector, useDispatch } from 'react-redux';
 import Container from '../../components/Containers';
 import TextInput from '../../components/Inputs/TextInput';
 import Confirm from '../../components/Buttons/Confirm';
 import styles from '../../components/shared/styles';
-import login from '../../redux/actions/auth/login';
-import EventlyMessage from '../../components/Message';
-import LinkWithText from '../../components/Buttons/LinkWithText';
+import inputs from '../../constants/inputProps';
+import MessageAlert from '../../components/shared/MessageAlert';
+import Error from '../../components/Error';
+import { submitNewPassword } from '../../redux/actions/auth';
 import { LOGIN } from '../../constants/routeNames';
-import setNewPassword from '../../redux/actions/auth/setNewPassword';
+
+const passwordProps = inputs.find(i =>
+  i.label.toLowerCase().includes('password')
+);
 
 const NewPassword = ({ navigation }) => {
-  const dispatch = useDispatch();
-  const { loading, error, msg } = useSelector(
-    ({ user }) => user.setNewPassword
+  const { params } = navigation.state;
+  const { token } = params;
+  const [inputValues, setInputs] = useState({ submitting: false });
+  const { submitting, changePwdMessage, successMessage } = useSelector(
+    state => state.auth
   );
 
-  useEffect(() => {
-    if (msg) {
-      navigation.navigate(LOGIN);
-    }
-  }, [msg]);
-
-  const validate = values => {
-    const errors = {};
-    if (!values.password) {
-      errors.password = 'Password is required';
-    } else if (values.password.length < 6) {
-      errors.password = 'Password should be least 6 characters long';
-    }
-
-    if (!values.password1) {
-      errors.password1 = 'Password confirmation is required';
-    } else if (values.password1.length < 6) {
-      errors.password1 = 'Password should be least 6 characters long';
-    } else if (values.password !== values.password1) {
-      errors.password1 = 'Passwords do not match';
-    }
-
-    return errors;
-  };
-
-  const handleSetNewPassword = values => {
-    const userData = {
-      password: values.password,
-      token:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6IkNyeWNldHJ1bHlAZ21haWwuY29tIiwiaWF0IjoxNTg0MjA5NjEwLCJleHAiOjE1ODQyOTYwMTB9.w-kjAy7VcugiZyYakg9UN8DAxr_R4mwYb6GZoVZDzOU'
-    };
-    setNewPassword(userData)(dispatch);
-  };
-
-  const formik = useFormik({
-    initialValues: { password1: '', password: '' },
-    validate,
-    onSubmit: values => {
-      handleSetNewPassword(values);
-    }
+  const [validPassword, setValidPassword] = useState({
+    status: true,
+    error: 'Minimum 6 characters'
+  });
+  const [confirmPassword, setConfirm] = useState({
+    status: true,
+    error: 'required'
   });
 
-  const {
-    handleChange,
-    handleBlur,
-    handleSubmit,
-    errors,
-    touched,
-    values
-  } = formik;
+  const dispatch = useDispatch();
+
+  const onNewPwdSubmit = async () => {
+    setValidPassword({ status: true });
+    setConfirm({ status: true });
+    const { newPassword, password } = inputValues;
+
+    if (!password || password.length < 1) {
+      setValidPassword({
+        status: false,
+        error: 'New password is required'
+      });
+      return;
+    }
+    if (password.length < 6) {
+      setValidPassword({
+        status: false,
+        error: 'Minimum 6 characters'
+      });
+      return;
+    }
+    if (!newPassword || newPassword.length < 1) {
+      setConfirm({
+        status: false,
+        error: 'Password is required'
+      });
+      return;
+    }
+    if (password !== newPassword) {
+      setConfirm({
+        status: false,
+        error: "Passwords don't match"
+      });
+
+      return;
+    }
+    dispatch(submitNewPassword({ password, token }))
+      .then(res => {
+        if (res.status && res.status === 200) {
+          navigation.navigate(LOGIN);
+        }
+      })
+      .catch(err => {
+        console.log(err);
+      });
+  };
 
   return (
     <Container>
       <Container style={{ width: '91.7%' }}>
         <Title style={[styles.title]}>New Password</Title>
-        <TextInput
-          style={styles.input}
-          onChangeText={handleChange('password')}
-          onBlur={handleBlur('password')}
-          value={values.password}
-          error={errors.password && touched.password}
-          label="Enter your new password"
-        />
-
-        {errors.password && touched.password ? (
-          <HelperText style={styles.helperText} type="error">
-            {errors.password}
-          </HelperText>
-        ) : null}
-
-        <TextInput
-          style={styles.input}
-          onChangeText={handleChange('password1')}
-          onBlur={handleBlur('password1')}
-          value={values.password1}
-          error={errors.password1 && touched.password1}
-          label="Repeat the same password"
-        />
-
-        {errors.password1 && touched.password1 ? (
-          <HelperText style={styles.helperText} type="error">
-            {errors.password1}
-          </HelperText>
-        ) : null}
-
-        {error && error.status !== 409 && (
-          <EventlyMessage title="Error" message={error.error} />
-        )}
+        {[
+          { ...passwordProps, label: 'Enter your new password' },
+          {
+            ...passwordProps,
+            label: 'Repeat the same password',
+            textContentType: 'newPassword'
+          }
+        ].map((input, index) => (
+          <TextInput
+            style={[styles.input, { marginTop: index === 0 ? 25 : 0 }]}
+            key={Number(index)}
+            onChangeText={value =>
+              setInputs({ ...inputValues, [input.textContentType]: value })
+            }
+            value={inputValues[input.textContentType]}
+            validInfo={
+              input.textContentType === 'password'
+                ? validPassword
+                : confirmPassword
+            }
+            {...input}
+          />
+        ))}
+        {changePwdMessage.length > 1 ? <Error text={changePwdMessage} /> : null}
         <Confirm
           style={{ marginTop: 20 }}
-          text={loading ? 'Please wait' : 'submit'}
-          disabled={loading}
-          loading={loading}
+          text={submitting ? 'Please wait' : 'submit'}
+          loading={submitting}
+          disable={submitting}
           labelStyle={styles.confirmButton}
           contentStyle={{ height: 45 }}
-          onPress={handleSubmit}
-        />
-        <LinkWithText
-          text="Want to Login?"
-          buttonLabel="log in here"
-          onPress={() => navigation.navigate(LOGIN)}
+          onPress={() => onNewPwdSubmit()}
         />
       </Container>
+      {successMessage && successMessage.length > 0 ? (
+        <MessageAlert visible={true} message={successMessage} />
+      ) : null}
     </Container>
   );
 };

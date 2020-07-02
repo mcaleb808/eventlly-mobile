@@ -12,7 +12,6 @@ import {
 import ViewPager from '@react-native-community/viewpager';
 import { Title, Paragraph, withTheme } from 'react-native-paper';
 import PropTypes from 'prop-types';
-import { useSelector } from 'react-redux';
 import Img1 from '../../assets/img/mangirl.png';
 import Img2 from '../../assets/img/gitl_man.png';
 import Container from '../../components/Containers';
@@ -24,8 +23,6 @@ const OnboardingScreen = ({
     colors: { primary, darkBlue, darkText, white }
   }
 }) => {
-  const location = useSelector(state => state.user.location.data);
-
   const style = StyleSheet.create({
     wrapperOuter: {
       flex: 1,
@@ -165,7 +162,7 @@ const OnboardingScreen = ({
             <TouchableOpacity
               onPress={() =>
                 page === slides.length - 1
-                  ? navigation.navigate(!location ? GET_STARTED : SIGNUP)
+                  ? navigation.navigate(GET_STARTED)
                   : pagerRef.current.setPage(page + 1)
               }>
               <Text

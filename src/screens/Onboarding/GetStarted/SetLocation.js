@@ -3,17 +3,16 @@ import React, { useState } from 'react';
 import { StyleSheet, View, Image, Dimensions, StatusBar } from 'react-native';
 import { Title, withTheme } from 'react-native-paper';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
-import { useDispatch } from 'react-redux';
+import PropTypes from 'prop-types';
 import Img3 from '../../../assets/img/car_pic.png';
 import Confirm from '../../../components/Buttons/Confirm';
 import Container from '../../../components/Containers';
 import { SIGNUP } from '../../../constants/routeNames';
-import setLocation from '../../../redux/actions/auth/setLocation';
 
 const SetLocation = ({
   navigation,
   theme: {
-    colors: { darkBlue, white }
+    colors: { darkBlue }
   }
 }) => {
   const style = StyleSheet.create({
@@ -75,12 +74,6 @@ const SetLocation = ({
 
   const [form, setForm] = useState({});
 
-  const dispatch = useDispatch();
-  React.useEffect(() => {
-    if (form.location) {
-      setLocation(form.location)(dispatch);
-    }
-  }, [dispatch, form]);
   return (
     <Container style={style.wrapperOuter}>
       <StatusBar hidden />
@@ -89,7 +82,7 @@ const SetLocation = ({
         <Title style={style.going}>What is your preferred City?</Title>
         <GooglePlacesAutocomplete
           query={{
-            key: 'tobeadded',
+            key: 'AIzaSyBnbxrmOwA12GugOZSO2PFYeMzA0kRb7Ug',
             language: 'en',
             components: 'country:ug'
           }}
@@ -136,6 +129,11 @@ const SetLocation = ({
       </View>
     </Container>
   );
+};
+
+SetLocation.propTypes = {
+  theme: PropTypes.any.isRequired,
+  navigation: PropTypes.any.isRequired
 };
 
 export default withTheme(SetLocation);

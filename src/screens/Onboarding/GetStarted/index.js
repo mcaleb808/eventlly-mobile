@@ -1,28 +1,14 @@
-/* eslint-disable react/jsx-filename-extension */
-import React, { useEffect } from 'react';
-import {
-  StyleSheet,
-  View,
-  Image,
-  Dimensions,
-  StatusBar,
-  ScrollView
-} from 'react-native';
-import { Title, withTheme, Paragraph, HelperText } from 'react-native-paper';
-import { useFormik } from 'formik';
-import { useDispatch, useSelector } from 'react-redux';
-import TextInput from '../../../components/Inputs/TextInput';
+import React, { useState } from 'react';
+import { StyleSheet, View, Image, Dimensions, StatusBar } from 'react-native';
+import { Title, withTheme } from 'react-native-paper';
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import PropTypes from 'prop-types';
 import Img3 from '../../../assets/img/car_pic.png';
 import Confirm from '../../../components/Buttons/Confirm';
 import Container from '../../../components/Containers';
-import { APP, SIGNUP } from '../../../constants/routeNames';
-import styles from '../../../components/shared/styles';
-import checkUserExists from '../../../redux/actions/auth/checkUserExists';
-import EventlyMessage from '../../../components/Message';
+import { SIGNUP } from '../../../constants/routeNames';
 
-import SocialAuthView from '../../Auth/SocialAuth';
-
-const GetStarted = ({
+const SetLocation = ({
   navigation,
   theme: {
     colors: { darkBlue }
@@ -33,14 +19,12 @@ const GetStarted = ({
       flex: 1,
       width: Dimensions.get('window').width,
       alignItems: 'flex-start',
-      justifyContent: 'center',
+      justifyContent: 'space-between',
       padding: 0,
       backgroundColor: 'white'
     },
     image: {
       width: '100%',
-      top: 0,
-      position: 'absolute',
       height: '50%',
       marginBottom: 12
     },
@@ -60,11 +44,10 @@ const GetStarted = ({
     },
 
     mainContent: {
-      position: 'relative',
       width: '100%',
-      height: Dimensions.get('window').height / 2.5,
+      flex: 1,
       paddingHorizontal: 24,
-      marginTop: 380
+      justifyContent: 'space-between'
     },
 
     going: {
@@ -75,9 +58,10 @@ const GetStarted = ({
       fontSize: 24,
       color: darkBlue,
       fontWeight: 'bold',
-      marginBottom: 11
+      marginBottom: 10
     },
-    inputs: {}
+    inputs: {},
+    confirmButton: {}
   });
 
   const slide = {
@@ -87,108 +71,68 @@ const GetStarted = ({
     key: 2
   };
 
-  const dispatch = useDispatch();
-
-  const { userEmail, loading, error } = useSelector(
-    state => state.user.checkUserExists
-  );
-  useEffect(() => {
-    if (userEmail) {
-      navigation.navigate(SIGNUP, { userEmail });
-    }
-    return () => {};
-  }, [userEmail, navigation]);
-  const validate = values => {
-    const errors = {};
-
-    if (!values.email) {
-      errors.email = 'Please enter your email address';
-    } else if (
-      !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(values.email)
-    ) {
-      errors.email = 'Please enter a valid email address';
-    }
-    return errors;
-  };
-
-  const handleSignUpSubmit = values => {
-    const userData = {
-      email: values.email
-    };
-    checkUserExists(userData)(dispatch);
-  };
-
-  const formik = useFormik({
-    initialValues: { email: '' },
-    validate,
-    onSubmit: values => {
-      handleSignUpSubmit(values);
-    }
-  });
-
-  const {
-    handleChange,
-    handleBlur,
-    handleSubmit,
-    errors,
-    touched,
-    values
-  } = formik;
+  const [form, setForm] = useState({});
 
   return (
     <Container style={style.wrapperOuter}>
-      <ScrollView
-        style={{ width: '100%', flex: 1 }}
-        showsVerticalScrollIndicator={false}>
-        <StatusBar hidden />
-        <Image style={style.image} source={slide.image} resizeMode="cover" />
-        <View style={style.mainContent}>
-          <Title style={style.going}>Lets Get Started</Title>
-          <Paragraph
-            disabled={loading}
-            onPress={() => {
-              navigation.navigate(APP);
-            }}
-            style={{
-              fontSize: 19,
-              position: 'absolute',
-              top: -330,
-              right: 30
-            }}>
-            Skip for now
-          </Paragraph>
-
-          <TextInput
-            mode="flat"
-            error={errors.email && touched.email}
-            label="Enter your Email"
-            onChangeText={handleChange('email')}
-            onBlur={handleBlur('email')}
-            value={values.email}
-          />
-          {errors.email && touched.email ? (
-            <HelperText style={styles.helperText} type="error">
-              {errors.email}
-            </HelperText>
-          ) : null}
-          {error && error.status !== 409 && (
-            <EventlyMessage title="Error" message={error.error} />
-          )}
-          <Confirm
-            style={{ marginTop: 30 }}
-            text={loading ? 'Please wait...' : 'GET STARTED'}
-            disabled={loading}
-            loading={loading}
-            labelStyle={style.confirmButton}
-            contentStyle={{ height: 45 }}
-            onPress={handleSubmit}
-          />
-
-          <SocialAuthView />
-        </View>
-      </ScrollView>
+      <StatusBar hidden />
+      <Image style={style.image} source={slide.image} resizeMode="cover" />
+      <View style={style.mainContent}>
+        <Title style={style.going}>What is your preferred City?</Title>
+        <GooglePlacesAutocomplete
+          query={{
+            key: 'AIzaSyBnbxrmOwA12GugOZSO2PFYeMzA0kRb7Ug',
+            language: 'en',
+            components: 'country:ug'
+          }}
+          placeholder="Enter your City Name"
+          onPress={data => setForm({ location: data.description })}
+          onFail={error => console.error(error)}
+          requestUrl={{
+            url:
+              'https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api',
+            useOnPlatform: 'mobile'
+          }}
+          styles={{
+            textInputContainer: {
+              backgroundColor: 'rgba(0,0,0,0)',
+              borderTopWidth: 0,
+              borderBottomWidth: 0,
+              marginBottom: 1
+            },
+            textInput: {
+              marginLeft: 0,
+              marginRight: 0,
+              height: 38,
+              color: '#5d5d5d',
+              fontSize: 14,
+              lineHeight: 20,
+              borderBottomWidth: 1,
+              borderColor: 'rgba(29, 57, 77, 0.4)'
+            },
+            predefinedPlacesDescription: {
+              color: '#1faadb'
+            }
+          }}
+        />
+        <Confirm
+          style={{ marginBottom: 20 }}
+          text="Continue"
+          disabled={!form.location}
+          labelStyle={style.confirmButton}
+          contentStyle={{ height: 45 }}
+          onPress={() => {
+            navigation.navigate(SIGNUP, { ...form });
+          }}
+        />
+      </View>
     </Container>
   );
 };
 
-export default withTheme(GetStarted);
+SetLocation.propTypes = {
+  theme: PropTypes.any.isRequired,
+  navigation: PropTypes.any.isRequired
+};
+
+export default withTheme(SetLocation);
