@@ -19,7 +19,6 @@
     "expo-facebook": "~8.1.0",
     "expo-font": "~8.1.0",
     "expo-google-app-auth": "^8.1.2",
-    "expo-location": "~8.1.0",
     "formik": "^2.1.4",
     "moment": "2.24.0",
     "prop-types": "15.7.2",

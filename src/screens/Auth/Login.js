@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Title, withTheme } from 'react-native-paper';
-import { View, Text, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text } from 'react-native';
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 import Container from '../../components/Containers';
@@ -31,7 +31,6 @@ const Login = ({ navigation }) => {
     error: 'required'
   });
 
-  const [loginError, setError] = useState(null);
   const dispatch = useDispatch();
 
   const onLoginButton = async () => {
@@ -72,7 +71,6 @@ const Login = ({ navigation }) => {
         }
       })
       .catch(err => {
-        setError(loginMessage);
         console.log(err);
       });
   };

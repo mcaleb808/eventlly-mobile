@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-filename-extension */
 import React, { useState, useRef } from 'react';
 import {
   View,
@@ -15,7 +14,7 @@ import PropTypes from 'prop-types';
 import Img1 from '../../assets/img/mangirl.png';
 import Img2 from '../../assets/img/gitl_man.png';
 import Container from '../../components/Containers';
-import { AUTH, GET_STARTED, SIGNUP } from '../../constants/routeNames';
+import { AUTH, GET_STARTED } from '../../constants/routeNames';
 
 const OnboardingScreen = ({
   navigation,

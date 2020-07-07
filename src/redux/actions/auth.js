@@ -78,6 +78,7 @@ export const confirmEmailFailure = payload => ({
 
 export const submitSignUp = payload => dispatch => {
   dispatch(submitAuthForm({ submitting: true }));
+  console.log(payload);
   return fetchAPI('/users', {
     method: 'POST',
     body: {
@@ -91,8 +92,6 @@ export const submitSignUp = payload => dispatch => {
     .then(data => {
       dispatch(setCurrentUser({ profile: data.user, events: [] }));
       dispatch(submitSignUpSuccess(data));
-      dispatch(fetchCurrentUser());
-      console.log(data);
       return data;
     })
     .catch(err => {

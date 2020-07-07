@@ -9,8 +9,6 @@ const Welcome = ({ theme, navigation }) => {
   const { params } = navigation.state;
   const { snackBar } = params;
 
-  console.log(snackBar);
-
   const [visible, setVisible] = useState(snackBar.status);
   return (
     <View
