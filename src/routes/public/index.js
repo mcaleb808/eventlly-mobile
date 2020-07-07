@@ -3,13 +3,15 @@ import Login from '../../screens/Auth/Login';
 import SignUp from '../../screens/Auth/SignUp';
 import PwdReset from '../../screens/Auth/PwdReset';
 import NewPassword from '../../screens/Auth/NewPassword';
+import Welcome from '../../screens/Auth/Welcome';
 import {
   LOGIN,
   SIGNUP,
   RESET,
   NEW_PASSWORD,
   GET_STARTED,
-  SET_LOCATION
+  SET_LOCATION,
+  WELCOME
 } from '../../constants/routeNames';
 import GetStarted from '../../screens/Onboarding/GetStarted';
 import SetLocation from '../../screens/Onboarding/GetStarted/SetLocation';
@@ -30,7 +32,8 @@ const routeConfig = {
     screen: NewPassword,
     path: '/newPassword',
     navigationOptions: { headerShown: false }
-  }
+  },
+  [WELCOME]: { screen: Welcome, navigationOptions: { headerShown: false } }
 };
 
 export default createStackNavigator(routeConfig, {

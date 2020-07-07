@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Title, withTheme } from 'react-native-paper';
-import { View, Text, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text } from 'react-native';
 import PropTypes from 'prop-types';
 import { useSelector, useDispatch } from 'react-redux';
 import Container from '../../components/Containers';

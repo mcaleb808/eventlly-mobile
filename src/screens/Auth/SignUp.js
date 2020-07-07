@@ -1,6 +1,6 @@
 /* eslint-disable no-nested-ternary */
 import React, { useState } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, AsyncStorage } from 'react-native';
 import PropTypes from 'prop-types';
 import { Title, withTheme } from 'react-native-paper';
 import { useSelector, useDispatch } from 'react-redux';
@@ -48,13 +48,12 @@ const SignUp = ({ navigation }) => {
     error: 'required'
   });
 
-  const onSubmitButton = () => {
+  const onSubmitButton = async () => {
     setValidEmail({ status: true });
     setValidPassword({ status: true });
     setValidFName({ status: true });
     setValidLName({ status: true });
     setConfirm({ status: true });
-
     const {
       emailAddress,
       password,
@@ -124,17 +123,19 @@ const SignUp = ({ navigation }) => {
       return;
     }
 
+    const location = await AsyncStorage.getItem('location');
+
     dispatch(
       submitSignUp({
         email: emailAddress,
         password,
         firstName: familyName,
         lastName: givenName,
-        role: 2,
-        location: 'Kigali'
+        location
       })
     ).then(res => {
       if (res.status === 201) {
+        console.log(res);
         navigation.navigate(WELCOME, {
           snackBar: {
             status: true,

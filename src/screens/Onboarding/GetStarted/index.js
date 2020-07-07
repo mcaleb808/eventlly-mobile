@@ -1,8 +1,15 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Image, Dimensions, StatusBar, KeyboardAvoidingView, Platform } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Image,
+  Dimensions,
+  StatusBar,
+  AsyncStorage
+} from 'react-native';
 import { Title, withTheme } from 'react-native-paper';
-import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import PropTypes from 'prop-types';
+import TextInput from '../../../components/Inputs/TextInput';
 import Img3 from '../../../assets/img/car_pic.png';
 import Confirm from '../../../components/Buttons/Confirm';
 import Container from '../../../components/Containers';
@@ -73,48 +80,22 @@ const SetLocation = ({
 
   const [form, setForm] = useState({});
 
+  const onSubmit = async () => {
+    await AsyncStorage.setItem('location', form.location);
+    navigation.navigate(SIGNUP);
+  };
+
   return (
     <Container>
-      
       <StatusBar hidden />
       <Image style={style.image} source={slide.image} resizeMode="cover" />
       <View style={style.mainContent}>
         <Title style={style.going}>What is your preferred City?</Title>
-        <GooglePlacesAutocomplete
-          query={{
-            key: 'AIzaSyBnbxrmOwA12GugOZSO2PFYeMzA0kRb7Ug',
-            language: 'en',
-            components: 'country:ug'
-          }}
-          placeholder="Enter your City Name"
-          onPress={data => setForm({ location: data.description })}
-          onFail={error => console.error(error)}
-          requestUrl={{
-            url:
-              'https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api',
-            useOnPlatform: 'mobile'
-          }}
-          styles={{
-            textInputContainer: {
-              backgroundColor: 'rgba(0,0,0,0)',
-              borderTopWidth: 0,
-              borderBottomWidth: 0,
-              marginBottom: 1
-            },
-            textInput: {
-              marginLeft: 0,
-              marginRight: 0,
-              height: 38,
-              color: '#5d5d5d',
-              fontSize: 14,
-              lineHeight: 20,
-              borderBottomWidth: 1,
-              borderColor: 'rgba(29, 57, 77, 0.4)'
-            },
-            predefinedPlacesDescription: {
-              color: '#1faadb'
-            }
-          }}
+        <TextInput
+          label="Enter your City Name"
+          mode="flat"
+          onChangeText={text => setForm({ location: text })}
+          value={form.location || ''}
         />
         <Confirm
           style={{ marginBottom: 20 }}
@@ -122,9 +103,7 @@ const SetLocation = ({
           // disabled={!form.location}
           labelStyle={style.confirmButton}
           contentStyle={{ height: 45 }}
-          onPress={() => {
-            navigation.navigate(SIGNUP, { ...form });
-          }}
+          onPress={() => onSubmit()}
         />
       </View>
     </Container>
