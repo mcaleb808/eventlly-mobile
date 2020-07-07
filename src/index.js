@@ -11,7 +11,6 @@ export default () => {
   console.log(prefix);
   return (
     <Provider store={store}>
-      f
       <PaperProvider theme={themes}>
         <AppContainer uriPrefix={prefix} />
       </PaperProvider>
