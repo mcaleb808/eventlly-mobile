@@ -70,6 +70,7 @@ const Reset = ({ navigation }) => {
           value={inputValues[input.textContentType]}
           validInfo={validEmail}
           {...input}
+          
         />
         {resetPwdMessage && resetPwdMessage.length > 1 ? (
           <Error text={resetPwdMessage} />

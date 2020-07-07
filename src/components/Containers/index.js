@@ -1,12 +1,14 @@
 import React from 'react';
-import { View } from 'react-native';
+import { KeyboardAvoidingView, Platform } from 'react-native';
 import PropTypes from 'prop-types';
 import styles from '../shared/styles';
 
 const Container = ({ children, ...props }) => (
-  <View style={[styles.container, { width: '100%' }]} {...props}>
+  <KeyboardAvoidingView
+    behavior={Platform.os == "ios" ? "padding" : "height"}
+    style={[styles.container, { width: '100%' }]} {...props}>
     {children}
-  </View>
+  </KeyboardAvoidingView>
 );
 
 Container.propTypes = {

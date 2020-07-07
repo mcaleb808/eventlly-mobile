@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Image, Dimensions, StatusBar } from 'react-native';
+import { StyleSheet, View, Image, Dimensions, StatusBar, KeyboardAvoidingView, Platform } from 'react-native';
 import { Title, withTheme } from 'react-native-paper';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import PropTypes from 'prop-types';
@@ -74,7 +74,8 @@ const SetLocation = ({
   const [form, setForm] = useState({});
 
   return (
-    <Container style={style.wrapperOuter}>
+    <Container>
+      
       <StatusBar hidden />
       <Image style={style.image} source={slide.image} resizeMode="cover" />
       <View style={style.mainContent}>
@@ -118,7 +119,7 @@ const SetLocation = ({
         <Confirm
           style={{ marginBottom: 20 }}
           text="Continue"
-          disabled={!form.location}
+          // disabled={!form.location}
           labelStyle={style.confirmButton}
           contentStyle={{ height: 45 }}
           onPress={() => {
