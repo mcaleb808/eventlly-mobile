@@ -31,7 +31,6 @@ const Login = ({ navigation }) => {
     error: 'required'
   });
 
-  const [loginError, setError] = useState(null);
   const dispatch = useDispatch();
 
   const onLoginButton = async () => {
@@ -72,7 +71,6 @@ const Login = ({ navigation }) => {
         }
       })
       .catch(err => {
-        setError(loginMessage);
         console.log(err);
       });
   };
